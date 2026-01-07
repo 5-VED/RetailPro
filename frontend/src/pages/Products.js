@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Navbar from '../components/Navbar';
-import { Plus, Pencil, Trash2, Search, LayoutGrid, List, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, LayoutGrid, List } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
