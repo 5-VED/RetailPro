@@ -8,12 +8,14 @@ import {
     BarChart3,
     Menu,
     LogOut,
+    CreditCard,
 } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
@@ -25,6 +27,7 @@ const Navbar = ({ onNavigate }) => {
         { id: 'products', label: 'Products', icon: Package, testId: 'nav-products' },
         { id: 'customers', label: 'Customers', icon: Users, testId: 'nav-customers' },
         { id: 'reports', label: 'Reports', icon: BarChart3, testId: 'nav-reports' },
+        { id: 'billing', label: 'Billing', icon: CreditCard, testId: 'nav-billing' },
     ];
 
     const handleNavClick = (page) => {
@@ -34,6 +37,10 @@ const Navbar = ({ onNavigate }) => {
 
     const handleLogout = () => {
         onNavigate('login');
+    };
+
+    const handleBillingClick = () => {
+        onNavigate('billing');
     };
 
     return (
@@ -88,6 +95,11 @@ const Navbar = ({ onNavigate }) => {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleBillingClick} data-testid="billing-button">
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            Billing
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout} data-testid="logout-button">
                             <LogOut className="mr-2 h-4 w-4" />
                             Logout

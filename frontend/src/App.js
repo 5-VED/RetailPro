@@ -9,6 +9,7 @@ import AddSale from './pages/AddSale';
 import Products from './pages/Products';
 import Customers from './pages/Customers';
 import Reports from './pages/Reports';
+import Billing from './pages/Billing';
 
 function App() {
     const [currentPage, setCurrentPage] = useState('dashboard');
@@ -33,6 +34,8 @@ function App() {
                 return <Customers onNavigate={handleNavigation} />;
             case 'reports':
                 return <Reports onNavigate={handleNavigation} />;
+            case 'billing':
+                return <Billing onNavigate={handleNavigation} />;
             default:
                 return <Login onSwitchToSignup={() => handleNavigation('signup')} />;
         }
