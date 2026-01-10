@@ -3,209 +3,343 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Combobox } from '@/components/ui/combobox';
+import QrScannerModal from '@/components/QrScannerModal';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Navbar from '../components/Navbar';
-import { ShoppingCart, CreditCard, Wallet } from 'lucide-react';
+import { ShoppingCart, CreditCard, Wallet, Plus, Trash2, ScanLine } from 'lucide-react';
+import { toast } from 'sonner';
+
+// Mock Data
+const MOCK_CUSTOMERS = [
+    { value: 'walk-in', label: 'Walk-in Customer' },
+    { value: 'rajesh', label: 'Rajesh Kumar' },
+    { value: 'priya', label: 'Priya Sharma' },
+    { value: 'amit', label: 'Amit Patel' },
+    { value: 'sneha', label: 'Sneha Gupta' },
+];
+
+const MOCK_PRODUCTS = [
+    { value: 'p1', label: 'Milk (1L)', price: 60, barcode: '8901234567890' },
+    { value: 'p2', label: 'Bread', price: 40, barcode: '8909876543210' },
+    { value: 'p3', label: 'Eggs (12)', price: 80, barcode: '123456789' },
+    { value: 'p4', label: 'Butter (500g)', price: 250, barcode: '1122334455' },
+    { value: 'p5', label: 'Cheese Slices', price: 120, barcode: '9988776655' },
+];
 
 const AddSale = ({ onNavigate }) => {
-    const [productName, setProductName] = useState('');
-    const [quantity, setQuantity] = useState('');
-    const [price, setPrice] = useState('');
-    const [paymentMode, setPaymentMode] = useState('cash');
+    // State for Sale Details
     const [customer, setCustomer] = useState('');
+    const [paymentMode, setPaymentMode] = useState('cash');
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+    // State for Items (Multiple Sales support)
+    const [items, setItems] = useState([]);
+
+    // State for Current Item Entry
+    const [currentItem, setCurrentItem] = useState({
+        productId: '',
+        quantity: '1',
+        price: '',
+    });
+
+    const handleAddItem = (e) => {
+        e.preventDefault(); // Prevent form submission if button inside form
+
+        if (!currentItem.productId || !currentItem.quantity || !currentItem.price) {
+            toast.error("Please fill all item details");
+            return;
+        }
+
+        const product = MOCK_PRODUCTS.find(p => p.value === currentItem.productId);
+
+        const newItem = {
+            id: Date.now(), // simple unique id
+            productId: currentItem.productId,
+            productName: product ? product.label : 'Unknown',
+            quantity: Number(currentItem.quantity),
+            price: Number(currentItem.price),
+        };
+
+        setItems([...items, newItem]);
+
+        // Reset current item fields
+        setCurrentItem({
+            productId: '',
+            quantity: '1',
+            price: '',
+        });
+        toast.success("Item added to sale");
+    };
+
+    const handleRemoveItem = (itemId) => {
+        setItems(items.filter(item => item.id !== itemId));
+    };
+
+    const handleProductSelect = (value) => {
+        const product = MOCK_PRODUCTS.find(p => p.value === value);
+        if (product) {
+            setCurrentItem(prev => ({
+                ...prev,
+                productId: value,
+                price: product.price.toString()
+            }));
+        } else {
+            setCurrentItem(prev => ({
+                ...prev,
+                productId: value
+            }));
+        }
+    };
+
+    const handleScan = (code) => {
+        setIsScannerOpen(false);
+        const product = MOCK_PRODUCTS.find(p => p.barcode === code);
+
+        if (product) {
+            toast.success(`Product found: ${product.label}`);
+            // Auto select product and populate price
+            setCurrentItem(prev => ({
+                ...prev,
+                productId: product.value,
+                price: product.price.toString()
+            }));
+        } else {
+            toast.error(`Product not found for barcode: ${code}`);
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Sale added:', { productName, quantity, price, paymentMode, customer });
+
+        if (items.length === 0) {
+            toast.error("Please add at least one item to the sale");
+            return;
+        }
+
+        const saleData = {
+            customer,
+            paymentMode,
+            items,
+            totalAmount: items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
+            date: new Date().toISOString(),
+        };
+
+        console.log('Sale Completed:', saleData);
+        toast.success("Sale recorded successfully!");
+
+        // Reset everything
+        setItems([]);
+        setCustomer('');
+        setPaymentMode('cash');
     };
 
-    const totalAmount = (Number(quantity) || 0) * (Number(price) || 0);
+    const totalAmount = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
 
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar onNavigate={onNavigate} />
+            <QrScannerModal
+                isOpen={isScannerOpen}
+                onClose={() => setIsScannerOpen(false)}
+                onScan={handleScan}
+            />
 
             <div className="container mx-auto px-4 py-6 lg:px-8 lg:py-8">
                 <div className="mb-6">
                     <h1 className="text-3xl font-bold tracking-tight">Add Sale</h1>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        Record a new sale transaction
+                        Record a new sale transaction with multiple items
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    {/* Sale Form */}
-                    <div className="lg:col-span-2">
+                    {/* Sale Form Area */}
+                    <div className="lg:col-span-2 space-y-6">
+
+                        {/* 1. Customer Selection */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Sale Details</CardTitle>
+                                <CardTitle>Customer Details</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <form onSubmit={handleSubmit} className="space-y-4">
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="product-name">Product Name *</Label>
-                                            <Input
-                                                id="product-name"
-                                                data-testid="product-name-input"
-                                                placeholder="Enter product name"
-                                                value={productName}
-                                                onChange={(e) => setProductName(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="customer">Customer (Optional)</Label>
-                                            <Select value={customer} onValueChange={setCustomer}>
-                                                <SelectTrigger id="customer" data-testid="customer-select">
-                                                    <SelectValue placeholder="Select customer" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="walk-in">Walk-in Customer</SelectItem>
-                                                    <SelectItem value="rajesh">Rajesh Kumar</SelectItem>
-                                                    <SelectItem value="priya">Priya Sharma</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="quantity">Quantity *</Label>
-                                            <Input
-                                                id="quantity"
-                                                data-testid="quantity-input"
-                                                type="number"
-                                                min="1"
-                                                placeholder="Enter quantity"
-                                                value={quantity}
-                                                onChange={(e) => setQuantity(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="price">Price per Unit *</Label>
-                                            <Input
-                                                id="price"
-                                                data-testid="price-input"
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                placeholder="Enter price"
-                                                value={price}
-                                                onChange={(e) => setPrice(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <Label>Payment Mode *</Label>
-                                        <RadioGroup value={paymentMode} onValueChange={setPaymentMode}>
-                                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                                <label
-                                                    htmlFor="cash"
-                                                    className={cn(
-                                                        'flex items-center space-x-3 rounded-lg border-2 p-4 cursor-pointer transition-colors',
-                                                        paymentMode === 'cash'
-                                                            ? 'border-primary bg-primary/5'
-                                                            : 'border-border hover:border-primary/50'
-                                                    )}
-                                                >
-                                                    <RadioGroupItem value="cash" id="cash" data-testid="payment-cash" />
-                                                    <div className="flex items-center gap-2">
-                                                        <Wallet className="h-5 w-5 text-green-600" />
-                                                        <div className="flex-1">
-                                                            <p className="font-medium">Cash</p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                Cash payment
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </label>
-
-                                                <label
-                                                    htmlFor="online"
-                                                    className={cn(
-                                                        'flex items-center space-x-3 rounded-lg border-2 p-4 cursor-pointer transition-colors',
-                                                        paymentMode === 'online'
-                                                            ? 'border-primary bg-primary/5'
-                                                            : 'border-border hover:border-primary/50'
-                                                    )}
-                                                >
-                                                    <RadioGroupItem value="online" id="online" data-testid="payment-online" />
-                                                    <div className="flex items-center gap-2">
-                                                        <CreditCard className="h-5 w-5 text-blue-600" />
-                                                        <div className="flex-1">
-                                                            <p className="font-medium">Online</p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                Digital payment
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </label>
-                                            </div>
-                                        </RadioGroup>
-                                    </div>
-
-                                    <div className="flex gap-3 pt-4">
-                                        <Button type="submit" className="flex-1" data-testid="save-sale-button">
-                                            <ShoppingCart className="mr-2 h-4 w-4" />
-                                            Save Sale
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => onNavigate('dashboard')}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </div>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Summary Card */}
-                    <div>
-                        <Card className="sticky top-20">
-                            <CardHeader>
-                                <CardTitle>Sale Summary</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Product:</span>
-                                        <span className="font-medium">{productName || '-'}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Quantity:</span>
-                                        <span className="font-medium">{quantity || '0'}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Price per unit:</span>
-                                        <span className="font-medium">₹{price || '0'}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Payment:</span>
-                                        <span className="font-medium capitalize">{paymentMode}</span>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Select Customer</Label>
+                                        <Combobox
+                                            items={MOCK_CUSTOMERS}
+                                            value={customer}
+                                            onSelect={setCustomer}
+                                            placeholder="Select customer..."
+                                        />
                                     </div>
                                 </div>
-                                <div className="border-t pt-4">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-lg font-semibold">Total Amount:</span>
+                            </CardContent>
+                        </Card>
+
+                        {/* 2. Add Items */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Add Items</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-12 items-end">
+                                    <div className="sm:col-span-12 md:col-span-5 space-y-2">
+                                        <Label>Product</Label>
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <Combobox
+                                                    items={MOCK_PRODUCTS}
+                                                    value={currentItem.productId}
+                                                    onSelect={handleProductSelect}
+                                                    placeholder="Search product..."
+                                                />
+                                            </div>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                type="button"
+                                                onClick={() => setIsScannerOpen(true)}
+                                                title="Scan QR Code"
+                                            >
+                                                <ScanLine className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <div className="sm:col-span-6 md:col-span-3 space-y-2">
+                                        <Label htmlFor="quantity">Quantity</Label>
+                                        <Input
+                                            id="quantity"
+                                            type="number"
+                                            min="1"
+                                            value={currentItem.quantity}
+                                            onChange={(e) => setCurrentItem({ ...currentItem, quantity: e.target.value })}
+                                            placeholder="Qty"
+                                        />
+                                    </div>
+
+                                    <div className="sm:col-span-6 md:col-span-3 space-y-2">
+                                        <Label htmlFor="price">Price</Label>
+                                        <Input
+                                            id="price"
+                                            type="number"
+                                            min="0"
+                                            value={currentItem.price}
+                                            onChange={(e) => setCurrentItem({ ...currentItem, price: e.target.value })}
+                                            placeholder="Price"
+                                        />
+                                    </div>
+
+                                    <div className="sm:col-span-12 md:col-span-1">
+                                        <Button
+                                            className="w-full"
+                                            size="icon"
+                                            type="button"
+                                            onClick={handleAddItem}
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* 3. Items List */}
+                        {items.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Items in Cart ({items.length})</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="rounded-md border">
+                                        <div className="grid grid-cols-12 gap-4 p-4 text-sm font-medium bg-muted/50 border-b">
+                                            <div className="col-span-5">Product</div>
+                                            <div className="col-span-2 text-center">Qty</div>
+                                            <div className="col-span-3 text-right">Price</div>
+                                            <div className="col-span-2"></div>
+                                        </div>
+                                        {items.map((item) => (
+                                            <div key={item.id} className="grid grid-cols-12 gap-4 p-4 items-center text-sm border-b last:border-0 hover:bg-muted/30">
+                                                <div className="col-span-5 font-medium">{item.productName}</div>
+                                                <div className="col-span-2 text-center">{item.quantity}</div>
+                                                <div className="col-span-3 text-right">₹{item.price * item.quantity}</div>
+                                                <div className="col-span-2 text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                                        onClick={() => handleRemoveItem(item.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+
+                    {/* Summary Sidebar */}
+                    <div className="space-y-6">
+                        <Card className="sticky top-20">
+                            <CardHeader>
+                                <CardTitle>Payment Details</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="space-y-3">
+                                    <Label>Payment Mode</Label>
+                                    <RadioGroup value={paymentMode} onValueChange={setPaymentMode}>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            <label
+                                                className={cn(
+                                                    'flex items-center space-x-3 rounded-lg border p-3 cursor-pointer transition-colors',
+                                                    paymentMode === 'cash' ? 'border-primary bg-primary/5' : 'border-border'
+                                                )}
+                                            >
+                                                <RadioGroupItem value="cash" id="cash" />
+                                                <Wallet className="h-4 w-4 text-green-600" />
+                                                <span className="text-sm font-medium">Cash</span>
+                                            </label>
+
+                                            <label
+                                                className={cn(
+                                                    'flex items-center space-x-3 rounded-lg border p-3 cursor-pointer transition-colors',
+                                                    paymentMode === 'online' ? 'border-primary bg-primary/5' : 'border-border'
+                                                )}
+                                            >
+                                                <RadioGroupItem value="online" id="online" />
+                                                <CreditCard className="h-4 w-4 text-blue-600" />
+                                                <span className="text-sm font-medium">Online / UPI</span>
+                                            </label>
+                                        </div>
+                                    </RadioGroup>
+                                </div>
+
+                                <div className="border-t pt-4 space-y-2">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Total Items:</span>
+                                        <span className="font-medium">{items.length}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-2">
+                                        <span className="text-lg font-semibold">Total Pay:</span>
                                         <span className="text-2xl font-bold text-primary">
                                             ₹{totalAmount.toLocaleString()}
                                         </span>
                                     </div>
                                 </div>
+
+                                <Button
+                                    className="w-full"
+                                    size="lg"
+                                    onClick={handleSubmit}
+                                    disabled={items.length === 0}
+                                >
+                                    <ShoppingCart className="mr-2 h-4 w-4" />
+                                    Complete Sale
+                                </Button>
                             </CardContent>
                         </Card>
                     </div>

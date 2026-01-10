@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '@/App.css';
+import { Toaster } from 'sonner';
 
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -38,7 +39,10 @@ function App() {
     };
 
     return (
-        <div className="App">{renderPage()}</div>
+        <div className="App">
+            {renderPage()}
+            <Toaster />
+        </div>
     );
 }
 
