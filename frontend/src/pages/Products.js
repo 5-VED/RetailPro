@@ -260,7 +260,7 @@ const Products = ({ onNavigate }) => {
                                     Add Product
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px]">
+                            <DialogContent className="w-[95vw] max-w-[425px] max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
                                     <DialogTitle>Add New Product</DialogTitle>
                                     <DialogDescription>
@@ -268,102 +268,83 @@ const Products = ({ onNavigate }) => {
                                     </DialogDescription>
                                 </DialogHeader>
                                 <form onSubmit={handleAddProduct} className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="name" className="text-right">
-                                            Name
-                                        </Label>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Name</Label>
                                         <Input
                                             id="name"
                                             value={newProduct.name}
                                             onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                                            className="col-span-3"
                                             required
                                         />
                                     </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="price" className="text-right">
-                                            Price
-                                        </Label>
-                                        <Input
-                                            id="price"
-                                            type="number"
-                                            value={newProduct.price}
-                                            onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                                            className="col-span-3"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="stock" className="text-right">
-                                            Stock
-                                        </Label>
-                                        <Input
-                                            id="stock"
-                                            type="number"
-                                            value={newProduct.stock}
-                                            onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                                            className="col-span-3"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="category" className="text-right">
-                                            Category
-                                        </Label>
-                                        <div className="col-span-3">
-                                            <Select
-                                                onValueChange={(value) => setNewProduct({ ...newProduct, category: value })}
-                                                value={newProduct.category}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="price">Price</Label>
+                                            <Input
+                                                id="price"
+                                                type="number"
+                                                value={newProduct.price}
+                                                onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
                                                 required
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select Category" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="Shirts">Shirts</SelectItem>
-                                                    <SelectItem value="Shoes">Shoes</SelectItem>
-                                                    <SelectItem value="Pants">Pants</SelectItem>
-                                                    <SelectItem value="Accessories">Accessories</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="stock">Stock</Label>
+                                            <Input
+                                                id="stock"
+                                                type="number"
+                                                value={newProduct.stock}
+                                                onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
+                                                required
+                                            />
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="description" className="text-right">
-                                            Desc
-                                        </Label>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="category">Category</Label>
+                                        <Select
+                                            onValueChange={(value) => setNewProduct({ ...newProduct, category: value })}
+                                            value={newProduct.category}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Shirts">Shirts</SelectItem>
+                                                <SelectItem value="Shoes">Shoes</SelectItem>
+                                                <SelectItem value="Pants">Pants</SelectItem>
+                                                <SelectItem value="Accessories">Accessories</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="description">Description</Label>
                                         <Input
                                             id="description"
                                             value={newProduct.description}
                                             onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                                            className="col-span-3"
                                         />
                                     </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="image" className="text-right">
-                                            Image
-                                        </Label>
-                                        <div className="col-span-3 flex flex-col gap-2">
-                                            <Input
-                                                id="image"
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageChange}
-                                                className="cursor-pointer"
-                                            />
-                                            {imagePreview && (
-                                                <div className="relative h-20 w-20 rounded-md border overflow-hidden">
-                                                    <img
-                                                        src={imagePreview}
-                                                        alt="Preview"
-                                                        className="h-full w-full object-cover"
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="image">Image</Label>
+                                        <Input
+                                            id="image"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            className="cursor-pointer"
+                                        />
+                                        {imagePreview && (
+                                            <div className="relative h-20 w-20 rounded-md border overflow-hidden">
+                                                <img
+                                                    src={imagePreview}
+                                                    alt="Preview"
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                     <DialogFooter>
-                                        <Button type="submit">Save Product</Button>
+                                        <Button type="submit" className="w-full sm:w-auto">Save Product</Button>
                                     </DialogFooter>
                                 </form>
                             </DialogContent>
@@ -537,7 +518,7 @@ const Products = ({ onNavigate }) => {
 
             {/* Edit Product Dialog */}
             <Dialog open={isEditOpen} onOpenChange={handleEditDialogOpenChange}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="w-[95vw] max-w-[425px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Edit Product</DialogTitle>
                         <DialogDescription>
@@ -545,102 +526,83 @@ const Products = ({ onNavigate }) => {
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSaveEdit} className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-name" className="text-right">
-                                Name
-                            </Label>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-name">Name</Label>
                             <Input
                                 id="edit-name"
                                 value={editForm.name}
                                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                className="col-span-3"
                                 required
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-price" className="text-right">
-                                Price
-                            </Label>
-                            <Input
-                                id="edit-price"
-                                type="number"
-                                value={editForm.price}
-                                onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                                className="col-span-3"
-                                required
-                            />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-stock" className="text-right">
-                                Stock
-                            </Label>
-                            <Input
-                                id="edit-stock"
-                                type="number"
-                                value={editForm.stock}
-                                onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })}
-                                className="col-span-3"
-                                required
-                            />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-category" className="text-right">
-                                Category
-                            </Label>
-                            <div className="col-span-3">
-                                <Select
-                                    onValueChange={(value) => setEditForm({ ...editForm, category: value })}
-                                    value={editForm.category}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-price">Price</Label>
+                                <Input
+                                    id="edit-price"
+                                    type="number"
+                                    value={editForm.price}
+                                    onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
                                     required
-                                >
-                                    <SelectTrigger id="edit-category">
-                                        <SelectValue placeholder="Select Category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Shirts">Shirts</SelectItem>
-                                        <SelectItem value="Shoes">Shoes</SelectItem>
-                                        <SelectItem value="Pants">Pants</SelectItem>
-                                        <SelectItem value="Accessories">Accessories</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-stock">Stock</Label>
+                                <Input
+                                    id="edit-stock"
+                                    type="number"
+                                    value={editForm.stock}
+                                    onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })}
+                                    required
+                                />
                             </div>
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-description" className="text-right">
-                                Desc
-                            </Label>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-category">Category</Label>
+                            <Select
+                                onValueChange={(value) => setEditForm({ ...editForm, category: value })}
+                                value={editForm.category}
+                            >
+                                <SelectTrigger id="edit-category">
+                                    <SelectValue placeholder="Select Category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Shirts">Shirts</SelectItem>
+                                    <SelectItem value="Shoes">Shoes</SelectItem>
+                                    <SelectItem value="Pants">Pants</SelectItem>
+                                    <SelectItem value="Accessories">Accessories</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-description">Description</Label>
                             <Input
                                 id="edit-description"
                                 value={editForm.description}
                                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                                className="col-span-3"
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-start gap-4">
-                            <Label htmlFor="edit-image" className="text-right pt-2">
-                                Image
-                            </Label>
-                            <div className="col-span-3 flex flex-col gap-2">
-                                <Input
-                                    id="edit-image"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleEditImageChange}
-                                    className="cursor-pointer"
-                                />
-                                {editImagePreview && (
-                                    <div className="relative h-20 w-20 rounded-md border overflow-hidden">
-                                        <img
-                                            src={editImagePreview}
-                                            alt="Preview"
-                                            className="h-full w-full object-cover"
-                                        />
-                                    </div>
-                                )}
-                            </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-image">Image</Label>
+                            <Input
+                                id="edit-image"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleEditImageChange}
+                                className="cursor-pointer"
+                            />
+                            {editImagePreview && (
+                                <div className="relative h-20 w-20 rounded-md border overflow-hidden">
+                                    <img
+                                        src={editImagePreview}
+                                        alt="Preview"
+                                        className="h-full w-full object-cover"
+                                    />
+                                </div>
+                            )}
                         </div>
                         <DialogFooter>
-                            <Button type="submit">Save Changes</Button>
+                            <Button type="submit" className="w-full sm:w-auto">Save Changes</Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

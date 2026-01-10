@@ -133,39 +133,39 @@ const Dashboard = ({ onNavigate }) => {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:mb-8 lg:grid-cols-4">
+                <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:mb-8 lg:grid-cols-4">
                     {stats.map((stat) => {
                         const Icon = stat.icon;
                         const isOpening = stat.id === 'opening';
 
                         return (
                             <Card key={stat.id} data-testid={stat.testId} className="group">
-                                <CardContent className="p-6">
-                                    <div className="flex items-start justify-between">
-                                        <div className="space-y-1 w-full">
-                                            <p className="text-sm font-medium text-muted-foreground">
+                                <CardContent className="p-3 sm:p-6">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="space-y-1 min-w-0 flex-1">
+                                            <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
                                                 {stat.title}
                                             </p>
 
                                             {isOpening && isEditingBalance ? (
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                                                     <Input
                                                         type="number"
                                                         value={tempBalance}
                                                         onChange={(e) => setTempBalance(e.target.value)}
-                                                        className="h-8 w-32"
+                                                        className="h-7 sm:h-8 w-20 sm:w-32 text-sm"
                                                         autoFocus
                                                     />
-                                                    <Button size="icon" variant="ghost" onClick={handleSaveBalance} className="h-8 w-8 hover:bg-green-100">
-                                                        <Check className="h-4 w-4 text-green-600" />
+                                                    <Button size="icon" variant="ghost" onClick={handleSaveBalance} className="h-7 w-7 sm:h-8 sm:w-8 hover:bg-green-100">
+                                                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
                                                     </Button>
-                                                    <Button size="icon" variant="ghost" onClick={handleCancelEdit} className="h-8 w-8 hover:bg-red-100">
-                                                        <X className="h-4 w-4 text-red-600" />
+                                                    <Button size="icon" variant="ghost" onClick={handleCancelEdit} className="h-7 w-7 sm:h-8 sm:w-8 hover:bg-red-100">
+                                                        <X className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
                                                     </Button>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center gap-2">
-                                                    <p className={`text-2xl font-bold ${stat.color} lg:text-3xl`}>
+                                                <div className="flex items-center gap-1">
+                                                    <p className={`text-lg sm:text-2xl font-bold ${stat.color} lg:text-3xl`}>
                                                         {stat.value}
                                                     </p>
                                                     {isOpening && (
@@ -173,16 +173,16 @@ const Dashboard = ({ onNavigate }) => {
                                                             size="icon"
                                                             variant="ghost"
                                                             onClick={handleStartEdit}
-                                                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            className="h-5 w-5 sm:h-6 sm:w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                                                         >
-                                                            <Pencil className="h-3 w-3 text-muted-foreground" />
+                                                            <Pencil className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-muted-foreground" />
                                                         </Button>
                                                     )}
                                                 </div>
                                             )}
                                         </div>
-                                        <div className={`rounded-lg p-3 ${stat.bgColor}`}>
-                                            <Icon className={`h-6 w-6 ${stat.color}`} />
+                                        <div className={`rounded-lg p-2 sm:p-3 ${stat.bgColor} shrink-0`}>
+                                            <Icon className={`h-4 w-4 sm:h-6 sm:w-6 ${stat.color}`} />
                                         </div>
                                     </div>
                                 </CardContent>

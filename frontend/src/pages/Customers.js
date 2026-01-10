@@ -43,6 +43,10 @@ const Customers = ({ onNavigate }) => {
     const [customers, setCustomers] = useState(initialCustomers);
     const [searchQuery, setSearchQuery] = useState('');
 
+    // Add State
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [newCustomer, setNewCustomer] = useState({ name: '', mobile: '' });
+
     // Edit State
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState(null);
@@ -57,6 +61,21 @@ const Customers = ({ onNavigate }) => {
             customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             customer.mobile.includes(searchQuery)
     );
+
+    // Add Handlers
+    const handleAddCustomer = (e) => {
+        e.preventDefault();
+        const customerToAdd = {
+            id: Date.now(), // unique id
+            name: newCustomer.name,
+            mobile: newCustomer.mobile,
+            totalSpent: 0,
+            lastVisit: new Date().toISOString().split('T')[0],
+        };
+        setCustomers([customerToAdd, ...customers]);
+        setIsAddOpen(false);
+        setNewCustomer({ name: '', mobile: '' });
+    };
 
     // Edit Handlers
     const handleEditClick = (customer) => {
@@ -98,7 +117,7 @@ const Customers = ({ onNavigate }) => {
                             Manage your customer database
                         </p>
                     </div>
-                    <Button data-testid="add-customer-button">
+                    <Button data-testid="add-customer-button" onClick={() => setIsAddOpen(true)}>
                         <Plus className="mr-2 h-4 w-4" />
                         Add Customer
                     </Button>
@@ -178,9 +197,48 @@ const Customers = ({ onNavigate }) => {
                     </CardContent>
                 </Card>
 
+                {/* Add Customer Dialog */}
+                <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                    <DialogContent className="w-[95vw] max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Add New Customer</DialogTitle>
+                            <DialogDescription>
+                                Enter the customer details below.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleAddCustomer} className="grid gap-4 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="add-name">Name</Label>
+                                <Input
+                                    id="add-name"
+                                    value={newCustomer.name}
+                                    onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                                    placeholder="Enter customer name"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="add-mobile">Mobile</Label>
+                                <Input
+                                    id="add-mobile"
+                                    type="tel"
+                                    value={newCustomer.mobile}
+                                    onChange={(e) => setNewCustomer({ ...newCustomer, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                                    placeholder="10-digit mobile number"
+                                    maxLength={10}
+                                    required
+                                />
+                            </div>
+                            <DialogFooter>
+                                <Button type="submit" className="w-full sm:w-auto">Add Customer</Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+
                 {/* Edit Customer Dialog */}
                 <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                    <DialogContent className="sm:max-w-[425px]">
+                    <DialogContent className="w-[95vw] max-w-[425px]">
                         <DialogHeader>
                             <DialogTitle>Edit Customer</DialogTitle>
                             <DialogDescription>
@@ -188,32 +246,26 @@ const Customers = ({ onNavigate }) => {
                             </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleSaveEdit} className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="name" className="text-right">
-                                    Name
-                                </Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Name</Label>
                                 <Input
                                     id="name"
                                     value={editForm.name}
                                     onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                    className="col-span-3"
                                     required
                                 />
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="mobile" className="text-right">
-                                    Mobile
-                                </Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="mobile">Mobile</Label>
                                 <Input
                                     id="mobile"
                                     value={editForm.mobile}
                                     onChange={(e) => setEditForm({ ...editForm, mobile: e.target.value })}
-                                    className="col-span-3"
                                     required
                                 />
                             </div>
                             <DialogFooter>
-                                <Button type="submit">Save Changes</Button>
+                                <Button type="submit" className="w-full sm:w-auto">Save Changes</Button>
                             </DialogFooter>
                         </form>
                     </DialogContent>
