@@ -41,7 +41,7 @@ const Reports = ({ onNavigate }) => {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 text-foreground">
             <Navbar onNavigate={onNavigate} />
 
             <div className="container mx-auto px-4 py-6 lg:px-8 lg:py-8">

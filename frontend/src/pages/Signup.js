@@ -65,7 +65,12 @@ const Signup = ({ onSwitchToLogin }) => {
             </div>
 
             {/* Right Side - Signup Form */}
-            <div className="w-full md:w-1/2 flex items-center justify-center p-4 bg-gray-50">
+            <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-4 bg-gray-50">
+                {/* Mobile Branding */}
+                <div className="md:hidden text-center mb-6">
+                    <h1 className="text-3xl font-bold text-primary">RetailPro</h1>
+                    <p className="text-sm text-muted-foreground mt-1">Join Thousands of Sellers</p>
+                </div>
                 <div className="w-full max-w-md">
                     <Card>
                         <CardHeader className="space-y-1 text-center">

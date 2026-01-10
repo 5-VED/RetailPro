@@ -137,7 +137,7 @@ const AddSale = ({ onNavigate }) => {
     const totalAmount = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 text-foreground">
             <Navbar onNavigate={onNavigate} />
             <QrScannerModal
                 isOpen={isScannerOpen}
@@ -183,7 +183,7 @@ const AddSale = ({ onNavigate }) => {
                                 <CardTitle>Add Items</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-12 items-end">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-12 sm:items-end">
                                     <div className="sm:col-span-12 md:col-span-5 space-y-2">
                                         <Label>Product</Label>
                                         <div className="flex gap-2">
@@ -207,38 +207,40 @@ const AddSale = ({ onNavigate }) => {
                                         </div>
                                     </div>
 
-                                    <div className="sm:col-span-6 md:col-span-3 space-y-2">
-                                        <Label htmlFor="quantity">Quantity</Label>
-                                        <Input
-                                            id="quantity"
-                                            type="number"
-                                            min="1"
-                                            value={currentItem.quantity}
-                                            onChange={(e) => setCurrentItem({ ...currentItem, quantity: e.target.value })}
-                                            placeholder="Qty"
-                                        />
-                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 sm:contents">
+                                        <div className="sm:col-span-6 md:col-span-3 space-y-2">
+                                            <Label htmlFor="quantity">Quantity</Label>
+                                            <Input
+                                                id="quantity"
+                                                type="number"
+                                                min="1"
+                                                value={currentItem.quantity}
+                                                onChange={(e) => setCurrentItem({ ...currentItem, quantity: e.target.value })}
+                                                placeholder="Qty"
+                                            />
+                                        </div>
 
-                                    <div className="sm:col-span-6 md:col-span-3 space-y-2">
-                                        <Label htmlFor="price">Price</Label>
-                                        <Input
-                                            id="price"
-                                            type="number"
-                                            min="0"
-                                            value={currentItem.price}
-                                            onChange={(e) => setCurrentItem({ ...currentItem, price: e.target.value })}
-                                            placeholder="Price"
-                                        />
+                                        <div className="sm:col-span-6 md:col-span-3 space-y-2">
+                                            <Label htmlFor="price">Price</Label>
+                                            <Input
+                                                id="price"
+                                                type="number"
+                                                min="0"
+                                                value={currentItem.price}
+                                                onChange={(e) => setCurrentItem({ ...currentItem, price: e.target.value })}
+                                                placeholder="Price"
+                                            />
+                                        </div>
                                     </div>
 
                                     <div className="sm:col-span-12 md:col-span-1">
                                         <Button
-                                            className="w-full"
-                                            size="icon"
+                                            className="w-full gap-2"
                                             type="button"
                                             onClick={handleAddItem}
                                         >
                                             <Plus className="h-4 w-4" />
+                                            <span className="md:hidden">Add Item</span>
                                         </Button>
                                     </div>
                                 </div>
@@ -252,7 +254,8 @@ const AddSale = ({ onNavigate }) => {
                                     <CardTitle>Items in Cart ({items.length})</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="rounded-md border">
+                                    {/* Desktop table view */}
+                                    <div className="hidden sm:block rounded-md border">
                                         <div className="grid grid-cols-12 gap-4 p-4 text-sm font-medium bg-muted/50 border-b">
                                             <div className="col-span-5">Product</div>
                                             <div className="col-span-2 text-center">Qty</div>
@@ -265,6 +268,30 @@ const AddSale = ({ onNavigate }) => {
                                                 <div className="col-span-2 text-center">{item.quantity}</div>
                                                 <div className="col-span-3 text-right">₹{item.price * item.quantity}</div>
                                                 <div className="col-span-2 text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                                        onClick={() => handleRemoveItem(item.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {/* Mobile card view */}
+                                    <div className="sm:hidden space-y-3">
+                                        {items.map((item) => (
+                                            <div key={item.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-medium truncate">{item.productName}</p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Qty: {item.quantity} × ₹{item.price}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-3 ml-3">
+                                                    <span className="font-semibold">₹{item.price * item.quantity}</span>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"

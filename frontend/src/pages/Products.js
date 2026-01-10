@@ -24,6 +24,16 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -77,6 +87,23 @@ const Products = ({ onNavigate }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
     const [isAddOpen, setIsAddOpen] = useState(false);
+
+    // Edit State (similar to Customers page)
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState(null);
+    const [editForm, setEditForm] = useState({
+        name: '',
+        price: '',
+        stock: '',
+        category: '',
+        description: '',
+    });
+    const [editImagePreview, setEditImagePreview] = useState(null);
+    const [editImageObjectUrl, setEditImageObjectUrl] = useState(null);
+
+    // Delete State (similar to Customers page)
+    const [deleteId, setDeleteId] = useState(null);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [newProduct, setNewProduct] = useState({
         name: '',
         price: '',
@@ -91,14 +118,81 @@ const Products = ({ onNavigate }) => {
         product.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleDelete = (id) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
-            setProducts(products.filter(p => p.id !== id));
+    const handleDeleteClick = (id) => {
+        setDeleteId(id);
+        setIsDeleteOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        setProducts(products.filter(p => p.id !== deleteId));
+        setIsDeleteOpen(false);
+        setDeleteId(null);
+    };
+
+    const handleEditClick = (product) => {
+        setEditingProduct(product);
+        setEditForm({
+            name: product.name ?? '',
+            price: product.price?.toString?.() ?? '',
+            stock: product.stock?.toString?.() ?? '',
+            category: product.category ?? '',
+            description: product.description ?? '',
+        });
+
+        // Reset edit image state
+        if (editImageObjectUrl) {
+            URL.revokeObjectURL(editImageObjectUrl);
+            setEditImageObjectUrl(null);
+        }
+        setEditImagePreview(product.image ?? null);
+        setIsEditOpen(true);
+    };
+
+    const handleEditImageChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (editImageObjectUrl) {
+            URL.revokeObjectURL(editImageObjectUrl);
+        }
+
+        const previewUrl = URL.createObjectURL(file);
+        setEditImageObjectUrl(previewUrl);
+        setEditImagePreview(previewUrl);
+    };
+
+    const handleEditDialogOpenChange = (open) => {
+        setIsEditOpen(open);
+        if (!open) {
+            setEditingProduct(null);
+            if (editImageObjectUrl) {
+                URL.revokeObjectURL(editImageObjectUrl);
+                setEditImageObjectUrl(null);
+            }
+            setEditImagePreview(null);
         }
     };
 
-    const handleEdit = (product) => {
-        alert(`Edit functionality for ${product.name} coming soon!`);
+    const handleSaveEdit = (e) => {
+        e.preventDefault();
+
+        if (!editingProduct) return;
+
+        setProducts(products.map((p) => {
+            if (p.id !== editingProduct.id) return p;
+            return {
+                ...p,
+                name: editForm.name,
+                price: Number(editForm.price),
+                stock: Number(editForm.stock),
+                category: editForm.category,
+                description: editForm.description,
+                image: editImagePreview || p.image,
+            };
+        }));
+
+        setIsEditOpen(false);
+        setEditingProduct(null);
     };
 
     const handleImageChange = (e) => {
@@ -128,7 +222,7 @@ const Products = ({ onNavigate }) => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 text-foreground">
             <Navbar onNavigate={onNavigate} />
 
             <div className="container mx-auto px-4 py-6 lg:px-8 lg:py-8">
@@ -295,7 +389,7 @@ const Products = ({ onNavigate }) => {
                     <CardContent>
                         {viewMode === 'list' ? (
                             <div className="overflow-x-auto">
-                                <Table>
+                                <Table className="min-w-[700px]">
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead className="w-[100px]">Image</TableHead>
@@ -347,16 +441,18 @@ const Products = ({ onNavigate }) => {
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                onClick={() => handleEdit(product)}
+                                                                onClick={() => handleEditClick(product)}
                                                                 data-testid={`edit-product-${product.id}`}
+                                                                title="Edit product"
                                                             >
                                                                 <Pencil className="h-4 w-4" />
                                                             </Button>
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                onClick={() => handleDelete(product.id)}
+                                                                onClick={() => handleDeleteClick(product.id)}
                                                                 data-testid={`delete-product-${product.id}`}
+                                                                title="Delete product"
                                                             >
                                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                                             </Button>
@@ -412,16 +508,18 @@ const Products = ({ onNavigate }) => {
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            onClick={() => handleEdit(product)}
+                                                            onClick={() => handleEditClick(product)}
                                                             className="h-8 w-8"
+                                                            title="Edit product"
                                                         >
                                                             <Pencil className="h-4 w-4" />
                                                         </Button>
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            onClick={() => handleDelete(product.id)}
+                                                            onClick={() => handleDeleteClick(product.id)}
                                                             className="h-8 w-8 text-destructive"
+                                                            title="Delete product"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
@@ -436,6 +534,139 @@ const Products = ({ onNavigate }) => {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Edit Product Dialog */}
+            <Dialog open={isEditOpen} onOpenChange={handleEditDialogOpenChange}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Edit Product</DialogTitle>
+                        <DialogDescription>
+                            Update product details and click save when you're done.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSaveEdit} className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-name" className="text-right">
+                                Name
+                            </Label>
+                            <Input
+                                id="edit-name"
+                                value={editForm.name}
+                                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                className="col-span-3"
+                                required
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-price" className="text-right">
+                                Price
+                            </Label>
+                            <Input
+                                id="edit-price"
+                                type="number"
+                                value={editForm.price}
+                                onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                                className="col-span-3"
+                                required
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-stock" className="text-right">
+                                Stock
+                            </Label>
+                            <Input
+                                id="edit-stock"
+                                type="number"
+                                value={editForm.stock}
+                                onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })}
+                                className="col-span-3"
+                                required
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-category" className="text-right">
+                                Category
+                            </Label>
+                            <div className="col-span-3">
+                                <Select
+                                    onValueChange={(value) => setEditForm({ ...editForm, category: value })}
+                                    value={editForm.category}
+                                    required
+                                >
+                                    <SelectTrigger id="edit-category">
+                                        <SelectValue placeholder="Select Category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Shirts">Shirts</SelectItem>
+                                        <SelectItem value="Shoes">Shoes</SelectItem>
+                                        <SelectItem value="Pants">Pants</SelectItem>
+                                        <SelectItem value="Accessories">Accessories</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-description" className="text-right">
+                                Desc
+                            </Label>
+                            <Input
+                                id="edit-description"
+                                value={editForm.description}
+                                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-start gap-4">
+                            <Label htmlFor="edit-image" className="text-right pt-2">
+                                Image
+                            </Label>
+                            <div className="col-span-3 flex flex-col gap-2">
+                                <Input
+                                    id="edit-image"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleEditImageChange}
+                                    className="cursor-pointer"
+                                />
+                                {editImagePreview && (
+                                    <div className="relative h-20 w-20 rounded-md border overflow-hidden">
+                                        <img
+                                            src={editImagePreview}
+                                            alt="Preview"
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit">Save Changes</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Alert */}
+            <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the product
+                            from the inventory.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleConfirmDelete}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

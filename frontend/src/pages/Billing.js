@@ -29,8 +29,9 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Combobox } from '@/components/ui/combobox';
+import QrScannerModal from '@/components/QrScannerModal';
 import Navbar from '../components/Navbar';
-import { Trash2, Plus, Search, PlusCircle, X } from 'lucide-react';
+import { Trash2, Plus, Search, PlusCircle, X, ScanLine } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Mock Data
@@ -43,11 +44,12 @@ const MOCK_CUSTOMERS = [
 ];
 
 const MOCK_PRODUCTS = [
-    { value: 'p1', label: 'Milk (1L)', price: 60 },
-    { value: 'p2', label: 'Bread', price: 40 },
-    { value: 'p3', label: 'Eggs (12)', price: 80 },
-    { value: 'p4', label: 'Butter (500g)', price: 250 },
-    { value: 'p5', label: 'Cheese Slices', price: 120 },
+    // NOTE: For now, `value` represents the product `_id` (static/mock).
+    { value: 'prod_001', label: 'Milk (1L)', price: 60 },
+    { value: 'prod_002', label: 'Bread', price: 40 },
+    { value: 'prod_003', label: 'Eggs (12)', price: 80 },
+    { value: 'prod_004', label: 'Butter (500g)', price: 250 },
+    { value: 'prod_005', label: 'Cheese Slices', price: 120 },
 ];
 
 const INITIAL_BILLS = [
@@ -62,6 +64,8 @@ const Billing = ({ onNavigate }) => {
     const [deleteId, setDeleteId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+    const [scanLaunchSource, setScanLaunchSource] = useState(null); // 'table' | 'modal' | null
 
     // Create Bill Form State
     const [newBillCustomer, setNewBillCustomer] = useState('');
@@ -102,6 +106,31 @@ const Billing = ({ onNavigate }) => {
                 productId: value
             }));
         }
+    };
+
+    const handleScan = (scannedProductId) => {
+        // QR encodes the product `_id` (mocked as `value` for now)
+        setIsScannerOpen(false);
+
+        const product = MOCK_PRODUCTS.find((p) => p.value === scannedProductId);
+        if (!product) {
+            toast.error(`Product not found for id: ${scannedProductId}`);
+            setScanLaunchSource(null);
+            return;
+        }
+
+        toast.success(`Product selected: ${product.label}`);
+        setCurrentItem((prev) => ({
+            ...prev,
+            productId: product.value,
+            price: product.price.toString(),
+        }));
+
+        // If scan came from the table action, open the create flow *after* a successful scan.
+        if (scanLaunchSource === 'table') {
+            setIsCreateModalOpen(true);
+        }
+        setScanLaunchSource(null);
     };
 
     const handleAddItem = () => {
@@ -171,6 +200,12 @@ const Billing = ({ onNavigate }) => {
     return (
         <div className="min-h-screen bg-gray-50 text-foreground">
             <Navbar onNavigate={onNavigate} />
+            <QrScannerModal
+                isOpen={isScannerOpen}
+                onClose={() => setIsScannerOpen(false)}
+                onScan={handleScan}
+                title="Scan Product QR"
+            />
 
             <div className="container mx-auto px-4 py-6 lg:px-8 lg:py-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -197,8 +232,8 @@ const Billing = ({ onNavigate }) => {
                     />
                 </div>
 
-                <div className="rounded-md border bg-card text-card-foreground shadow-sm">
-                    <Table>
+                <div className="rounded-md border bg-card text-card-foreground shadow-sm overflow-x-auto">
+                    <Table className="min-w-[600px]">
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[80px]">Sr No</TableHead>
@@ -232,14 +267,29 @@ const Billing = ({ onNavigate }) => {
                                         <TableCell className="text-center">{bill.quantity}</TableCell>
                                         <TableCell className="text-right font-medium">₹{bill.amount}</TableCell>
                                         <TableCell className="text-right">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-destructive hover:bg-destructive/10"
-                                                onClick={() => setDeleteId(bill.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            <div className="flex justify-end gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    title="Scan product QR"
+                                                    onClick={() => {
+                                                        // Scan first; only open create modal after successful scan.
+                                                        setScanLaunchSource('table');
+                                                        setIsScannerOpen(true);
+                                                    }}
+                                                >
+                                                    <ScanLine className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-destructive hover:bg-destructive/10"
+                                                    title="Delete record"
+                                                    onClick={() => setDeleteId(bill.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -269,7 +319,7 @@ const Billing = ({ onNavigate }) => {
 
             {/* Create Bill Modal */}
             <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Create New Bill</DialogTitle>
                     </DialogHeader>
@@ -287,38 +337,60 @@ const Billing = ({ onNavigate }) => {
                         </div>
 
                         {/* Add Items Section */}
-                        <div className="grid gap-2 p-4 border rounded-lg bg-muted/20">
-                            <Label className="mb-2">Add Items</Label>
-                            <div className="grid grid-cols-12 gap-3 items-end">
-                                <div className="col-span-5">
-                                    <Combobox
-                                        items={MOCK_PRODUCTS}
-                                        value={currentItem.productId}
-                                        onSelect={handleProductSelect}
-                                        placeholder="Select product..."
-                                    />
+                        <div className="grid gap-3 p-4 border rounded-lg bg-muted/20">
+                            <Label>Add Items</Label>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-12 sm:items-end">
+                                <div className="sm:col-span-5">
+                                    <Label className="text-xs text-muted-foreground mb-1.5 block sm:hidden">Product</Label>
+                                    <div className="flex gap-2">
+                                        <div className="flex-1">
+                                            <Combobox
+                                                items={MOCK_PRODUCTS}
+                                                value={currentItem.productId}
+                                                onSelect={handleProductSelect}
+                                                placeholder="Select product..."
+                                            />
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            type="button"
+                                            onClick={() => {
+                                                setScanLaunchSource('modal');
+                                                setIsScannerOpen(true);
+                                            }}
+                                            title="Scan Product QR"
+                                        >
+                                            <ScanLine className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
-                                <div className="col-span-2">
-                                    <Input
-                                        type="number"
-                                        placeholder="Qty"
-                                        min="1"
-                                        value={currentItem.quantity}
-                                        onChange={(e) => setCurrentItem({ ...currentItem, quantity: e.target.value })}
-                                    />
+                                <div className="grid grid-cols-2 gap-3 sm:contents">
+                                    <div className="sm:col-span-2">
+                                        <Label className="text-xs text-muted-foreground mb-1.5 block sm:hidden">Qty</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="Qty"
+                                            min="1"
+                                            value={currentItem.quantity}
+                                            onChange={(e) => setCurrentItem({ ...currentItem, quantity: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="sm:col-span-3">
+                                        <Label className="text-xs text-muted-foreground mb-1.5 block sm:hidden">Price</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="Price"
+                                            min="0"
+                                            value={currentItem.price}
+                                            onChange={(e) => setCurrentItem({ ...currentItem, price: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="col-span-3">
-                                    <Input
-                                        type="number"
-                                        placeholder="Price"
-                                        min="0"
-                                        value={currentItem.price}
-                                        onChange={(e) => setCurrentItem({ ...currentItem, price: e.target.value })}
-                                    />
-                                </div>
-                                <div className="col-span-2">
-                                    <Button onClick={handleAddItem} disabled={!currentItem.productId} className="w-full">
+                                <div className="sm:col-span-2">
+                                    <Button onClick={handleAddItem} disabled={!currentItem.productId} className="w-full gap-2">
                                         <Plus className="h-4 w-4" />
+                                        <span className="sm:hidden">Add Item</span>
                                     </Button>
                                 </div>
                             </div>
@@ -326,38 +398,65 @@ const Billing = ({ onNavigate }) => {
 
                         {/* Items List */}
                         {newBillItems.length > 0 && (
-                            <div className="border rounded-md">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Product</TableHead>
-                                            <TableHead className="text-center">Qty</TableHead>
-                                            <TableHead className="text-right">Price</TableHead>
-                                            <TableHead className="text-right">Total</TableHead>
-                                            <TableHead className="w-[50px]"></TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {newBillItems.map((item) => (
-                                            <TableRow key={item.id}>
-                                                <TableCell>{item.productName}</TableCell>
-                                                <TableCell className="text-center">{item.quantity}</TableCell>
-                                                <TableCell className="text-right">₹{item.price}</TableCell>
-                                                <TableCell className="text-right font-medium">₹{item.price * item.quantity}</TableCell>
-                                                <TableCell>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-destructive"
-                                                        onClick={() => handleRemoveItem(item.id)}
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </Button>
-                                                </TableCell>
+                            <div className="space-y-3">
+                                {/* Desktop table view */}
+                                <div className="hidden sm:block border rounded-md overflow-x-auto">
+                                    <Table className="min-w-[400px]">
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Product</TableHead>
+                                                <TableHead className="text-center">Qty</TableHead>
+                                                <TableHead className="text-right">Price</TableHead>
+                                                <TableHead className="text-right">Total</TableHead>
+                                                <TableHead className="w-[50px]"></TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {newBillItems.map((item) => (
+                                                <TableRow key={item.id}>
+                                                    <TableCell>{item.productName}</TableCell>
+                                                    <TableCell className="text-center">{item.quantity}</TableCell>
+                                                    <TableCell className="text-right">₹{item.price}</TableCell>
+                                                    <TableCell className="text-right font-medium">₹{item.price * item.quantity}</TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-destructive"
+                                                            onClick={() => handleRemoveItem(item.id)}
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                                {/* Mobile card view */}
+                                <div className="sm:hidden space-y-2">
+                                    {newBillItems.map((item) => (
+                                        <div key={item.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium truncate">{item.productName}</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {item.quantity} × ₹{item.price}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2 ml-3">
+                                                <span className="font-semibold text-primary">₹{item.price * item.quantity}</span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-destructive"
+                                                    onClick={() => handleRemoveItem(item.id)}
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
