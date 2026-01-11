@@ -45,11 +45,11 @@ const MOCK_CUSTOMERS = [
 
 const MOCK_PRODUCTS = [
     // NOTE: For now, `value` represents the product `_id` (static/mock).
-    { value: 'prod_001', label: 'Milk (1L)', price: 60 },
-    { value: 'prod_002', label: 'Bread', price: 40 },
-    { value: 'prod_003', label: 'Eggs (12)', price: 80 },
-    { value: 'prod_004', label: 'Butter (500g)', price: 250 },
-    { value: 'prod_005', label: 'Cheese Slices', price: 120 },
+    { value: 'prod_001', label: 'Milk (1L)', price: 60, image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=100&h=100&fit=crop' },
+    { value: 'prod_002', label: 'Bread', price: 40, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=100&h=100&fit=crop' },
+    { value: 'prod_003', label: 'Eggs (12)', price: 80, image: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=100&h=100&fit=crop' },
+    { value: 'prod_004', label: 'Butter (500g)', price: 250, image: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=100&h=100&fit=crop' },
+    { value: 'prod_005', label: 'Cheese Slices', price: 120, image: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=100&h=100&fit=crop' },
 ];
 
 const INITIAL_BILLS = [
@@ -349,6 +349,7 @@ const Billing = ({ onNavigate }) => {
                                                 value={currentItem.productId}
                                                 onSelect={handleProductSelect}
                                                 placeholder="Select product..."
+                                                showImages={true}
                                             />
                                         </div>
                                         <Button

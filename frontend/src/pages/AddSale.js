@@ -20,11 +20,11 @@ const MOCK_CUSTOMERS = [
 ];
 
 const MOCK_PRODUCTS = [
-    { value: 'p1', label: 'Milk (1L)', price: 60, barcode: '8901234567890' },
-    { value: 'p2', label: 'Bread', price: 40, barcode: '8909876543210' },
-    { value: 'p3', label: 'Eggs (12)', price: 80, barcode: '123456789' },
-    { value: 'p4', label: 'Butter (500g)', price: 250, barcode: '1122334455' },
-    { value: 'p5', label: 'Cheese Slices', price: 120, barcode: '9988776655' },
+    { value: 'p1', label: 'Milk (1L)', price: 60, barcode: '8901234567890', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=100&h=100&fit=crop' },
+    { value: 'p2', label: 'Bread', price: 40, barcode: '8909876543210', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=100&h=100&fit=crop' },
+    { value: 'p3', label: 'Eggs (12)', price: 80, barcode: '123456789', image: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=100&h=100&fit=crop' },
+    { value: 'p4', label: 'Butter (500g)', price: 250, barcode: '1122334455', image: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=100&h=100&fit=crop' },
+    { value: 'p5', label: 'Cheese Slices', price: 120, barcode: '9988776655', image: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=100&h=100&fit=crop' },
 ];
 
 const AddSale = ({ onNavigate }) => {
@@ -193,6 +193,7 @@ const AddSale = ({ onNavigate }) => {
                                                     value={currentItem.productId}
                                                     onSelect={handleProductSelect}
                                                     placeholder="Search product..."
+                                                    showImages={true}
                                                 />
                                             </div>
                                             <Button
